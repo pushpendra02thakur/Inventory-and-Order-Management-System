@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     DB_NAME: str = "tracehub_db"
 
     # CORS Configurations
-    CORS_ORIGINS: List[str] = ["*"]
+    CORS_ORIGINS: str = "*"
 
     class Config:
         env_file = ".env"

@@ -24,9 +24,24 @@ app = FastAPI(
 )
 
 # CORS configuration
+cors_origins_list = []
+if settings.CORS_ORIGINS:
+    # If it looks like a JSON list, try to parse it
+    if settings.CORS_ORIGINS.startswith("[") and settings.CORS_ORIGINS.endswith("]"):
+        import json
+        try:
+            cors_origins_list = json.loads(settings.CORS_ORIGINS)
+        except Exception:
+            cors_origins_list = [settings.CORS_ORIGINS]
+    else:
+        # Otherwise, split by comma
+        cors_origins_list = [origin.strip() for origin in settings.CORS_ORIGINS.split(",") if origin.strip()]
+else:
+    cors_origins_list = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=cors_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
