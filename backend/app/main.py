@@ -7,21 +7,32 @@ from . import models, database, crud, auth, schemas
 from .config import settings
 from .routers import auth as auth_router, users, products, customers, orders, inventory, logs
 
-# Automatically create tables on startup
-models.Base.metadata.create_all(bind=database.engine)
-
-# Seed default users if tables are empty
-db = database.SessionLocal()
-try:
-    crud.seed_default_users(db)
-finally:
-    db.close()
-
 app = FastAPI(
     title="TraceHub API",
     description="Enterprise Inventory & Order Management API with JWT Authentication and Role-Based Access Control. Made by Pushpendra.",
     version="1.0.0"
 )
+
+@app.on_event("startup")
+def on_startup():
+    print("Database initialization starting...")
+    try:
+        # Automatically create tables on startup
+        models.Base.metadata.create_all(bind=database.engine)
+        
+        # Seed default users if tables are empty
+        db = database.SessionLocal()
+        try:
+            crud.seed_default_users(db)
+        finally:
+            db.close()
+        print("Database initialization completed successfully.")
+    except Exception as e:
+        print("=" * 60)
+        print(f"DATABASE CONNECTION / INITIALIZATION ERROR: {e}")
+        print("Your FastAPI app has successfully booted, but could not connect to PostgreSQL.")
+        print("Please verify that your DATABASE_URL is correct and that the PostgreSQL service is active in Railway.")
+        print("=" * 60)
 
 # CORS configuration
 cors_origins_list = []
