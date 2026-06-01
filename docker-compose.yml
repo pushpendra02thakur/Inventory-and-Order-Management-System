@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  # Database Service (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: tracehub_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tracehub_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tracehub_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Backend Service (FastAPI)
+  backend:
+    build: ./backend
+    container_name: tracehub_backend
+    restart: always
+    ports:
+      - "8002:8000"
+    environment:
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=tracehub_db
+      - SECRET_KEY=tracehub_jwt_secret_key_super_secret_1234567890
+      - REFRESH_SECRET_KEY=tracehub_jwt_refresh_secret_key_super_secret_0987654321
+      - CORS_ORIGINS=["*"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Frontend Service (React + Nginx)
+  frontend:
+    build: ./frontend
+    container_name: tracehub_frontend
+    restart: always
+    ports:
+      - "3002:80"
+    environment:
+      - VITE_API_URL=http://localhost:8002
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

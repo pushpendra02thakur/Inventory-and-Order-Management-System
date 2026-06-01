@@ -1,0 +1,27 @@
+# Node modules and build targets
+**/node_modules
+**/dist
+**/build
+
+# Python cache and testing cache
+**/__pycache__
+**/.pytest_cache
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Git and OS metadata
+.git
+.gitignore
+.github
+.vscode
+.idea
+Thumbs.db
+.DS_Store
+
+# Local variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
